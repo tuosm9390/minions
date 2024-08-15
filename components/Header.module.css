@@ -1,0 +1,64 @@
+.navbar_container {
+  height: 50px;
+  background-color: black;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 200px;
+
+  /* 메뉴바 효과 위한 설정 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transition: top 0.3s, opacity 0.5s;
+}
+
+.navbar_container.hidden {
+  top: -50px; /* 메뉴바 높이만큼 위로 이동 */
+  opacity: 0;
+}
+
+.navbar_container.visible {
+  top: 0;
+  opacity: 1;
+}
+
+.menuList {
+  height: 100%;
+  list-style: none;
+  display: flex;
+  align-content: center;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.menuList li {
+  margin-left: 20px;
+  padding: 0 5px;
+  height: 55%;
+  align-content: center;
+  text-align: center;
+}
+
+.menuList li:hover {
+  cursor: pointer;
+  color: black;
+
+  border-bottom: 1px solid black;
+}
+
+/* 특정 요소에 hover 스타일을 적용하지 않도록 수정 */
+.menuList.logo li:hover {
+  color: inherit;
+  border-bottom: none;
+}
+
+.menuList li.active {
+  border-bottom: 1px solid black;
+  color: black;
+}
+
+.navbarBox {
+  width: fit-content;
+  height: 100%;
+}
