@@ -1,7 +1,7 @@
-'use client'
-import { useState } from 'react';
-import Header from './Header';
-import { ScrollProvider } from './ScrollContext';
+"use client";
+import { useState } from "react";
+import Header from "./Header";
+import { ScrollProvider } from "./ScrollContext";
 
 const Layout = ({ children }) => {
   const [isVisible, setIsVisible] = useState(true);
@@ -12,6 +12,6 @@ const Layout = ({ children }) => {
       {children}
     </ScrollProvider>
   );
-}
+};
 
 export default Layout;

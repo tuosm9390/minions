@@ -1,5 +1,5 @@
 .navbar_container {
-  height: 50px;
+  height: 70px;
   background-color: black;
   display: flex;
   justify-content: space-between;
@@ -14,7 +14,8 @@
 }
 
 .navbar_container.hidden {
-  top: -50px; /* 메뉴바 높이만큼 위로 이동 */
+  top: -50px;
+  /* 메뉴바 높이만큼 위로 이동 */
   opacity: 0;
 }
 

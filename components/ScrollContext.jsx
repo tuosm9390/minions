@@ -1,11 +1,19 @@
-import React, { createContext, useContext, useRef, useState, useEffect, RefObject } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, {
+  createContext,
+  RefObject,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 const ScrollContext = createContext(undefined);
 
 export const useScrollContext = () => {
   const context = useContext(ScrollContext);
   if (!context) {
-    throw new Error('useScrollContext must be used within a ScrollProvider');
+    throw new Error("useScrollContext must be used within a ScrollProvider");
   }
   return context;
 };
@@ -15,22 +23,25 @@ export const ScrollProvider = ({ children }) => {
   const skillsRef = useRef(null);
   const archiveRef = useRef(null);
   const projectRef = useRef(null);
-  const [activeSection, setActiveSection] = useState('aboutRef');
+  const [activeSection, setActiveSection] = useState("aboutRef");
 
-  const handleScroll = (sectionRef = 'aboutRef' | 'skillsRef' | 'archiveRef' | 'projectRef') => {
+  const handleScroll = (
+    sectionRef = "aboutRef" | "skillsRef" | "archiveRef" | "projectRef"
+  ) => {
     const refMap = {
       aboutRef,
       skillsRef,
       archiveRef,
-      projectRef
+      projectRef,
     };
 
     const ref = refMap[sectionRef];
     if (ref.current) {
       const yOffset = -50; // 50px offset for navbar
-      const yPosition = ref.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      const yPosition =
+        ref.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
 
-      window.scrollTo({ top: yPosition, behavior: 'smooth' });
+      window.scrollTo({ top: yPosition, behavior: "smooth" });
     }
   };
 
@@ -43,7 +54,7 @@ export const ScrollProvider = ({ children }) => {
           }
         });
       },
-      { rootMargin: '-50px 0px -50% 0px' } // Adjust this rootMargin based on your navbar height and desired offset
+      { rootMargin: "-50px 0px -50% 0px" } // Adjust this rootMargin based on your navbar height and desired offset
     );
 
     if (aboutRef.current) observer.observe(aboutRef.current);
@@ -60,13 +71,23 @@ export const ScrollProvider = ({ children }) => {
   }, [aboutRef, skillsRef, archiveRef, projectRef]);
 
   return (
-    <ScrollContext.Provider value={{ aboutRef, skillsRef, archiveRef, projectRef, handleScroll, activeSection }}>
+    <ScrollContext.Provider
+      value={{
+        aboutRef,
+        skillsRef,
+        archiveRef,
+        projectRef,
+        handleScroll,
+        activeSection,
+      }}
+    >
       {children}
     </ScrollContext.Provider>
   );
 };
 
-{/* 
+{
+  /* 
 구성 요소 설명
 ScrollContext 정의:
 
@@ -88,4 +109,5 @@ IntersectionObserver 설정 및 해제:
 
 섹션이 뷰포트에 들어오거나 나갈 때를 감지하여 activeSection 상태를 업데이트합니다.
 useEffect의 반환 값으로 observer를 해제하는 클린업 함수를 반환하여 컴포넌트가 언마운트될 때 옵저버를 해제합니다.
-*/}
+*/
+}

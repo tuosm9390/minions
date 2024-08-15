@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
-import Layout from '@/components/Layout';
-import styles from '@/styles/Home.module.css';
+import Layout from "@/components/Layout";
+import styles from "@/styles/Home.module.css";
 
 export default function Home() {
   return (
@@ -24,13 +24,22 @@ export default function Home() {
         <h2>모임 사진</h2>
         <div className={styles.photoGrid}>
           <div className={styles.photo}>
-            <img src="/path/to/photo1.jpg" alt="Photo 1" />
+            <img
+              src="/path/to/photo1.jpg"
+              alt="Photo 1"
+            />
           </div>
           <div className={styles.photo}>
-            <img src="/path/to/photo2.jpg" alt="Photo 2" />
+            <img
+              src="/path/to/photo2.jpg"
+              alt="Photo 2"
+            />
           </div>
           <div className={styles.photo}>
-            <img src="/path/to/photo3.jpg" alt="Photo 3" />
+            <img
+              src="/path/to/photo3.jpg"
+              alt="Photo 3"
+            />
           </div>
           {/* 추가 사진 */}
         </div>
@@ -39,11 +48,6 @@ export default function Home() {
   );
 }
 
-
 Home.getLayout = function getLayout(page) {
-  return (
-    <Layout>
-      {page}
-    </Layout>
-  )
-}
+  return <Layout>{page}</Layout>;
+};

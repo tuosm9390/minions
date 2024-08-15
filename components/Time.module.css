@@ -1,0 +1,18 @@
+.timerBox {
+  width: 200px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  background-color: #ffffff;
+  border: 2px solid #000;
+  transition: background-color 0.2s, scale ease 0.2s;
+  color: black;
+}
+
+.blink {
+  background-color: red;
+  color: white;
+  scale: 1;
+}
