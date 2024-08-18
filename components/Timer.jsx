@@ -63,12 +63,12 @@ export default function Timer() {
       <div className={`${styles.timerBox} ${isBlinking ? styles.blink : ""}`}>
         <span>{formatTime(seconds, milliseconds)}</span>
       </div>
-      <button
+      {/* <button
         type="button"
         onClick={() => setSeconds(5)}
       >
         갱신
-      </button>
+      </button> */}
     </>
   );
 }
