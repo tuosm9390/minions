@@ -9,8 +9,10 @@ import topLane from "../../public/topLane.png";
 import styles from "./teamAuction.module.css";
 import { supabase } from "@/supabase.config";
 
-const { data: teamList } = await supabase.from("minions_team").select();
-const { data: memberList } = await supabase.from("minions_member").select();
+// supabase의 query문을 사용해서 조회
+const { data: teamList } = await supabase.rpc("team_list");
+// team_name이 null인 경우만 조회 : 팀에 소속되어 있지 않음.
+const { data: memberList } = await supabase.from("minions_member").select().is("team_name", null);
 
 // 회원 목록을 필터링하고 정렬하는 함수
 const processMembers = (members) => {
@@ -51,18 +53,23 @@ export default function index() {
                   <h3 className={styles.team_name}>{item.team_name}</h3>
                   <div className={styles.member}>
                     <Image src={topLane} alt="topLane" width={25} />
+                    <span>{item.top_member_name}</span>
                   </div>
                   <div className={styles.member}>
                     <Image src={jgLane} alt="jgLane" width={25} />
+                    <span>{item.jg_member_name}</span>
                   </div>
                   <div className={styles.member}>
                     <Image src={midLane} alt="midLane" width={25} />
+                    <span>{item.mid_member_name}</span>
                   </div>
                   <div className={styles.member}>
                     <Image src={adLane} alt="adLane" width={25} />
+                    <span>{item.ad_member_name}</span>
                   </div>
                   <div className={styles.member}>
                     <Image src={supLane} alt="supLane" width={25} />
+                    <span>{item.sup_member_name}</span>
                   </div>
                 </div>
               ))}
@@ -79,6 +86,8 @@ export default function index() {
               <div className={styles.member_info}>
                 <h3>이름</h3>
                 <h3>{isLiveMember.member_name}</h3>
+                <h3>아이디</h3>
+                <h3>{isLiveMember.in_game_id}</h3>
                 <h3>티어</h3>
                 <h3>{isLiveMember.tier}</h3>
                 <h3>라인</h3>
@@ -99,7 +108,7 @@ export default function index() {
                     width={60}
                   />
                   <div className={styles.waiting_member_list_name}>
-                    <span>{item.member_name}</span>
+                    <span>{item.in_game_id}</span>
                     <Image
                       src={imageMap[item.position] || ""}
                       alt="/"

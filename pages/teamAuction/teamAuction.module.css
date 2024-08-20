@@ -66,6 +66,11 @@
   grid-row-start: 2;
 
   align-content: flex-end;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .waiting_list {
@@ -136,4 +141,6 @@
 
 .member_info h3:nth-child(even) {
   border-bottom: 1px solid #333;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
 }

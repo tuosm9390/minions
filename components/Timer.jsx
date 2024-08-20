@@ -5,8 +5,11 @@ export default function Timer() {
   const [seconds, setSeconds] = useState(7); // 시작 시간을 15초로 설정
   const [milliseconds, setMilliseconds] = useState(0); // 밀리초 상태
   const [isBlinking, setIsBlinking] = useState(false);
+  const [start, setStart] = useState(false);
 
   useEffect(() => {
+    if (!start) return; // start가 false일 때는 타이머 실행 안 함
+
     const timerId = setInterval(() => {
       if (milliseconds === 0) {
         if (seconds <= 0) {
@@ -21,7 +24,7 @@ export default function Timer() {
     }, 10); // 10ms 간격으로 업데이트
 
     return () => clearInterval(timerId); // 컴포넌트 언마운트 시 타이머 정리
-  }, [seconds, milliseconds]);
+  }, [start, seconds, milliseconds]);
 
   useEffect(() => {
     if (seconds === 5 && milliseconds === 0) {
@@ -63,12 +66,9 @@ export default function Timer() {
       <div className={`${styles.timerBox} ${isBlinking ? styles.blink : ""}`}>
         <span>{formatTime(seconds, milliseconds)}</span>
       </div>
-      {/* <button
-        type="button"
-        onClick={() => setSeconds(5)}
-      >
-        갱신
-      </button> */}
+      <button type="button" onClick={() => setStart(!start)}>
+        시작
+      </button>
     </>
   );
 }
