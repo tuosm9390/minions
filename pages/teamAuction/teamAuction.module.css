@@ -18,20 +18,21 @@
   border: 1px solid #ffcc00;
 }
 
-.auctionBox_container {
+.auctionBox_container,
+.footer_container {
   display: flex;
 }
 
 .auction_box {
   /* background-color: #ffcc00; */
-  width: 100%;
+  width: 40%;
   /* min-height: 200px; */
   border-right: 1px solid #ffcc00;
   border-bottom: 1px solid #ffcc00;
 }
 
 .auction_box:nth-child(2) {
-  width: 50%;
+  width: 30%;
 }
 
 .auction_box:nth-child(3) {
@@ -42,20 +43,40 @@
 .team_list {
   display: flex;
   flex-direction: column;
+  padding: 0px 30px;
 }
 
 .team_box {
   width: 100%;
-  height: 140px;
+  height: fit-content;
   margin-bottom: 10px;
+  padding: 10px 0px;
 
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   align-items: end;
+  border-bottom: 1px solid #ffcc00;
+}
+
+.team_name_box {
+  display: flex;
+  justify-content: space-between;
+  grid-column-start: 1;
+  grid-column-end: 6;
+  /* align-items: center; */
 }
 
 .team_name {
   height: 25px;
+}
+
+.remain_point {
+  width: 80px;
+  background-color: white;
+  align-content: center;
+  border: 1px solid #001aff;
+  font-weight: 700;
+  margin-right: 20px;
 }
 
 .member {
@@ -143,4 +164,12 @@
   border-bottom: 1px solid #333;
   margin-bottom: 10px;
   padding-bottom: 10px;
+}
+
+.chat_box_container {
+}
+
+.chat_box {
+  height: 200px;
+  resize: none;
 }

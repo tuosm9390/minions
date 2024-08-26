@@ -2,24 +2,24 @@ import Layout from "@/components/Layout";
 import Timer from "@/components/Timer";
 import Image from "next/image";
 import adLane from "../../public/botLane.webp";
-import jgLane from "../../public/jgLane.png";
-import midLane from "../../public/midLane.png";
-import supLane from "../../public/supLane.png";
-import topLane from "../../public/topLane.png";
+import jgLane from "../../public/jgLane.webp";
+import midLane from "../../public/midLane.webp";
+import supLane from "../../public/supLane.webp";
+import topLane from "../../public/topLane.webp";
+import auction_main from "../../public/auction_main.webp";
 import styles from "./teamAuction.module.css";
 import { supabase } from "@/supabase.config";
 import { useState, useEffect } from "react";
+import AuctionChat from "@/components/AuctionChat";
 
 export default function Index() {
   const [teamList, setTeamList] = useState();
   const [memberList, setMemberList] = useState();
   const [isLiveMember, setIsLiveMember] = useState();
-  const [bidTeam, setBidTeam] = useState({
-    id: 1,
-    team_name: "팀1",
-    initialPoint: 1000,
-    bidPoint: 100,
-  });
+  const [bidTeam, setBidTeam] = useState();
+  const [bidPrice, setBidPrice] = useState(0);
+  const [start, setStart] = useState(false);
+  const [roomName, setRoomName] = useState();
 
   const fetchTeamList = async () => {
     const { data, error } = await supabase.rpc("team_list");
@@ -59,6 +59,7 @@ export default function Index() {
   };
 
   // 입찰 진행
+  // 채팅으로 진행 socket io 사용
   const placeBid = () => {};
 
   // 낙찰
@@ -68,7 +69,8 @@ export default function Index() {
       .update({
         team_id: bidTeam.id,
         team_name: bidTeam.team_name,
-        point: bidTeam.bidPoint,
+        point: bidPrice,
+        isLive: false,
       })
       .eq("id", isLiveMember.id)
       .select();
@@ -77,11 +79,31 @@ export default function Index() {
       .from("minions_team")
       .update({
         [isLiveMember.position]: isLiveMember.id,
-        point: bidTeam.initialPoint - bidTeam.bidPoint,
+        remain_point: bidTeam.initial_point - bidPrice,
       })
-      .eq("id", isLiveMember.id)
+      .eq("id", bidTeam.id)
       .select();
   };
+
+  // 경매 대기로 변경
+  const setLiveMember = async () => {
+    function getRandomMember(memberList) {
+      const randomIndex = Math.floor(Math.random() * memberList.length);
+      return memberList[randomIndex];
+    }
+
+    const randomMember = getRandomMember(memberList);
+
+    await supabase
+      .from("minions_member")
+      .update({
+        isLive: true,
+      })
+      .eq("id", randomMember.id)
+      .select();
+  };
+
+  // 최고 입찰액이 0일 경우 유찰 분류
 
   const imageMap = {
     top: topLane,
@@ -118,6 +140,26 @@ export default function Index() {
     fetchMemberList();
   }, []);
 
+  // room_name을 입력받아 해당 id를 반환하는 함수
+  const getRoomIdByName = async () => {
+    const inputRoomName = window.prompt("room_name을 입력하세요:"); // room_name 입력받기
+
+    // Supabase에서 room_name에 해당하는 방 조회
+    const { data, error } = await supabase
+      .from("chat_room") // 테이블 이름
+      .select() // 선택할 컬럼
+      .eq("room_name", `${inputRoomName}`); // 조건
+
+    if (error) {
+      window.alert("에러 발생: " + error.message); // 에러 처리
+    } else if (data.length > 0) {
+      // window.alert(`ID: ${data[0].id}`); // ID 출력
+      setRoomName(data[0].id);
+    } else {
+      window.alert("일치하는 방이 없습니다."); // 방이 없을 경우
+    }
+  };
+
   return (
     <div className={styles.container}>
       <h1>리그전 팀 경매</h1>
@@ -127,7 +169,17 @@ export default function Index() {
             <h2 className={styles.team_list_title}>팀 리스트</h2>
             {teamList?.map((item, index) => (
               <div key={index} className={styles.team_box}>
-                <h3 className={styles.team_name}>{item.team_name}</h3>
+                <div className={styles.team_name_box}>
+                  <h3
+                    className={styles.team_name}
+                    onClick={() => setBidTeam(item)}
+                  >
+                    {item.team_name}
+                  </h3>
+                  <div className={styles.remain_point}>
+                    <span>{item.remain_point}P</span>
+                  </div>
+                </div>
                 <div className={styles.member}>
                   <Image src={topLane} alt="topLane" width={25} />
                   <span>{item.top_member_name}</span>
@@ -155,7 +207,7 @@ export default function Index() {
             <h2>현재 인원</h2>
             <div className={styles.live_member_box}>
               <Image
-                src={imageMap[isLiveMember?.position] || ""}
+                src={imageMap[isLiveMember?.position] || auction_main}
                 alt="/"
                 width={300}
               />
@@ -172,11 +224,6 @@ export default function Index() {
               <h3>각오</h3>
               <h3>{isLiveMember?.description}</h3>
             </div>
-
-            <Timer className={styles.timer} />
-            <button type="button" onClick={() => successfulBid()}>
-              낙찰
-            </button>
           </div>
           <div className={`${styles.auction_box} ${styles.waiting_list}`}>
             <h2 className={styles.waiting_list_title}>대기명단</h2>
@@ -194,6 +241,25 @@ export default function Index() {
               </div>
             ))}
           </div>
+        </div>
+        <div className={styles.footer_container}>
+          <div className={styles.chat_box_container}>
+            {/* <textarea
+              className={styles.chat_box}
+              readonly="readonly"
+            ></textarea> */}
+            <AuctionChat roomName={roomName} bidPrice={bidPrice} setBidPrice={setBidPrice} />
+          </div>
+          <Timer className={styles.timer} start={start} setStart={setStart} />
+          <button type="button" onClick={() => successfulBid()}>
+            낙찰
+          </button>
+          <button type="button" onClick={() => setLiveMember()}>
+            뽑기
+          </button>
+          <button type="button" onClick={() => getRoomIdByName()}>
+            방 입장
+          </button>
         </div>
       </section>
     </div>

@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import styles from "./Time.module.css";
 
-export default function Timer() {
+export default function Timer({ start, setStart }) {
   const [seconds, setSeconds] = useState(7); // 시작 시간을 15초로 설정
   const [milliseconds, setMilliseconds] = useState(0); // 밀리초 상태
   const [isBlinking, setIsBlinking] = useState(false);
-  const [start, setStart] = useState(false);
+
+  const toggleTimer = () => {
+    setStart((prevStart) => !prevStart); // start 값을 토글
+  };
 
   useEffect(() => {
     if (!start) return; // start가 false일 때는 타이머 실행 안 함
@@ -66,8 +69,8 @@ export default function Timer() {
       <div className={`${styles.timerBox} ${isBlinking ? styles.blink : ""}`}>
         <span>{formatTime(seconds, milliseconds)}</span>
       </div>
-      <button type="button" onClick={() => setStart(!start)}>
-        시작
+      <button type="button" onClick={toggleTimer}>
+        {start ? "타이머 정지" : "타이머 시작"}
       </button>
     </>
   );
