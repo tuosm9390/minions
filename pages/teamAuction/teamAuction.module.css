@@ -23,6 +23,10 @@
   display: flex;
 }
 
+.footer_container {
+  flex-direction: column;
+}
+
 .auction_box {
   /* background-color: #ffcc00; */
   width: 40%;
@@ -96,14 +100,15 @@
 
 .waiting_list {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 15px;
   padding: 0px 10px;
 }
 
 .waiting_list_title {
-  grid-column-start: 1;
-  grid-column-end: 5;
+  /* grid-column-start: 1;
+  grid-column-end: 5; */
+  margin-bottom: 20px;
 }
 
 .waiting_member_list {
@@ -124,6 +129,8 @@
   align-content: center;
   align-items: center;
   gap: 5px;
+
+  font-size: 12px;
 }
 
 .waiting_member_list span {
@@ -152,6 +159,9 @@
   text-align: center; /* 텍스트 가운데 정렬 */
   width: 80%;
   margin: 10px 0;
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .member_info h3 {
@@ -161,12 +171,18 @@
 }
 
 .member_info h3:nth-child(even) {
-  border-bottom: 1px solid #333;
+  /* border-bottom: 1px solid #333; */
   margin-bottom: 10px;
   padding-bottom: 10px;
 }
 
+.member_info div:nth-child(5) {
+  grid-column-start: 2;
+  grid-column-end: 4;
+}
+
 .chat_box_container {
+  width: 100%;
 }
 
 .chat_box {

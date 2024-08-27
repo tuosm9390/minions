@@ -94,7 +94,7 @@ body {
     )
     rgb(var(--background-start-rgb));
 
-    padding-top: 50px;
+  padding-top: 50px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -126,4 +126,15 @@ a {
 
 a:hover {
   background-color: #e6b800; /* 호버 색상 */
+}
+
+/* input태그 type=number 화살표 제거 */
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none; /* Chrome, Safari, Edge */
+  margin: 0; /* 스핀 버튼의 기본 여백 제거 */
 }

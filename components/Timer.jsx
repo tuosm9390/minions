@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import styles from "./Time.module.css";
 
 export default function Timer({ start, setStart }) {
-  const [seconds, setSeconds] = useState(7); // 시작 시간을 15초로 설정
+  const [seconds, setSeconds] = useState(15); // 시작 시간을 15초로 설정
   const [milliseconds, setMilliseconds] = useState(0); // 밀리초 상태
   const [isBlinking, setIsBlinking] = useState(false);
 
@@ -58,7 +58,7 @@ export default function Timer({ start, setStart }) {
   }, [seconds]);
 
   const formatTime = (seconds, millis) => {
-    return `${String(seconds).padStart(2, "0")}:${String(millis).padStart(
+    return `${String(seconds).padStart(2, "0")}.${String(millis).padStart(
       2,
       "0"
     )}`;
@@ -67,11 +67,11 @@ export default function Timer({ start, setStart }) {
   return (
     <>
       <div className={`${styles.timerBox} ${isBlinking ? styles.blink : ""}`}>
-        <span>{formatTime(seconds, milliseconds)}</span>
+        <span>COUNT {formatTime(seconds, milliseconds)}</span>
       </div>
-      <button type="button" onClick={toggleTimer}>
+      {/* <button type="button" onClick={toggleTimer}>
         {start ? "타이머 정지" : "타이머 시작"}
-      </button>
+      </button> */}
     </>
   );
 }
