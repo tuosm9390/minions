@@ -141,6 +141,14 @@ export default function Index() {
     sup: supLane,
   };
 
+  const positionNames = {
+    top: "탑",
+    jg: "정글",
+    mid: "미드",
+    ad: "원딜",
+    sup: "서폿",
+  };
+
   useEffect(() => {
     // 채널 구독
     const table_update_channel = supabase
@@ -275,7 +283,7 @@ export default function Index() {
               </div>
               <div>
                 <h3>라인</h3>
-                <h3>{isLiveMember?.position}</h3>
+                <h3>{positionNames[isLiveMember?.position]}</h3>
               </div>
               <div>
                 <h3>한마디</h3>
