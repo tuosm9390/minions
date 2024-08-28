@@ -146,7 +146,7 @@ const AuctionChat = ({
                   className={styles.timer_container}
                   style={{ color: "white" }}
                 >
-                  <Timer
+                  {/* <Timer
                     className={styles.timer}
                     start={start}
                     setStart={setStart}
@@ -154,7 +154,8 @@ const AuctionChat = ({
                     setSeconds={setSeconds}
                     milliseconds={milliseconds}
                     setMilliseconds={setMilliseconds}
-                  />
+                  /> */}
+                  <TimerComponent className={styles.timer} />
                   <button
                     onClick={() =>
                       setBidPrice((prevBidPrice) => prevBidPrice + 5)
@@ -230,7 +231,7 @@ const AuctionChat = ({
                     setMilliseconds={setMilliseconds}
                   /> */}
 
-                  <TimerComponent />
+                  <TimerComponent className={styles.timer} />
 
                   <button
                     onClick={() =>
