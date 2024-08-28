@@ -28,7 +28,10 @@
   margin-bottom: 10px;
 }
 
-.timer_container button {
+.timer_container button,
+.timer_container .undoBtn {
+  display: flex;
+  align-items: center;
   background-color: #ffffff;
   border: 2px solid #000;
   color: black;
@@ -37,8 +40,10 @@
   padding: 0 10px;
 }
 
-.timer_container button:hover {
+.timer_container button:hover,
+.timer_container .undoBtn:hover {
   background-color: rgb(176, 174, 174);
+  color: white;
 }
 
 .bid_container {

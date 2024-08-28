@@ -2,6 +2,9 @@ import React, { useEffect, useState, useRef } from "react";
 import { supabase } from "@/supabase.config";
 import styles from "./AuctionChat.module.css";
 import Timer from "./Timer";
+import UndoOutlinedIcon from "@mui/icons-material/UndoOutlined";
+import PermIdentityOutlinedIcon from "@mui/icons-material/PermIdentityOutlined";
+import TimerComponent from "./TimerComponent";
 
 const AuctionChat = ({
   roomName,
@@ -15,6 +18,10 @@ const AuctionChat = ({
   // 상태 변수
   const [chatHistory, setChatHistory] = useState([]);
   const chatContainerRef = useRef(null);
+  const [seconds, setSeconds] = useState(15); // 시작 시간을 15초로 설정
+  const [milliseconds, setMilliseconds] = useState(0); // 밀리초 상태
+
+  const [observer, setObserver] = useState(true);
 
   useEffect(() => {
     // 채널 구독
@@ -40,6 +47,8 @@ const AuctionChat = ({
     };
 
     fetchMessages();
+
+    console.log(roomName);
 
     // 컴포넌트 언마운트 시 구독 해제
     return () => {
@@ -101,78 +110,150 @@ const AuctionChat = ({
   return (
     <div className={styles.container}>
       <div className={styles.chatContainer}>
-        <div className={styles.chat_box} ref={chatContainerRef}>
-          {chatHistory?.map((msg) => {
-            const parts = msg.content.split(" - "); // "-"로 분리
-            const team_leader = parts[0];
-            const auction_member = parts[1];
-            const points = parts[2];
+        {roomName && (
+          <>
+            <div className={styles.chat_box} ref={chatContainerRef}>
+              {chatHistory?.map((msg) => {
+                const parts = msg.content.split(" - "); // "-"로 분리
+                const team_leader = parts[0];
+                const auction_member = parts[1];
+                const points = parts[2];
 
-            return (
-              <div key={msg.id} className={styles.entry}>
-                <span
-                  className={styles.team_leader_text}
-                  style={{
-                    color: myTeamInfo?.team_color,
-                  }}
+                return (
+                  <div key={msg.id} className={styles.entry}>
+                    <span
+                      className={styles.team_leader_text}
+                      style={{
+                        color: myTeamInfo?.team_color,
+                      }}
+                    >
+                      {team_leader}
+                    </span>{" "}
+                    - {auction_member}
+                    {" - "}
+                    <span className={styles.point}>{points}</span>
+                  </div>
+                );
+              })}
+            </div>
+            {/*             
+              관전자 - 다음 사람 설정, 경매 시작, 타이머일시정지, 경매 취소, 타이머
+              경매자 - 타이머, 잔여포인트, 입찰포인트, 입찰버튼
+            */}
+            {!observer ? (
+              <>
+                <div
+                  className={styles.timer_container}
+                  style={{ color: "white" }}
                 >
-                  {team_leader}
-                </span>{" "}
-                - {auction_member}
-                {" - "}
-                <span className={styles.point}>{points}</span>
-              </div>
-            );
-          })}
-        </div>
-        {/* 
-          관전자 - 다음 사람 설정, 경매 시작, 타이머일시정지, 경매 취소, 타이머
-          경매자 - 타이머, 잔여포인트, 입찰포인트, 입찰버튼
-        */}
-        <div className={styles.timer_container} style={{ color: "white" }}>
-          <Timer className={styles.timer} start={start} setStart={setStart} />
-          <button
-            onClick={() => setBidPrice((prevBidPrice) => prevBidPrice + 5)}
-          >
-            +5
-          </button>
-          <button
-            onClick={() => setBidPrice((prevBidPrice) => prevBidPrice + 10)}
-          >
-            +10
-          </button>
-          <button
-            onClick={() => setBidPrice((prevBidPrice) => prevBidPrice + 50)}
-          >
-            +50
-          </button>
-          <button
-            onClick={() => setBidPrice((prevBidPrice) => prevBidPrice + 100)}
-          >
-            +100
-          </button>
-        </div>
+                  <Timer
+                    className={styles.timer}
+                    start={start}
+                    setStart={setStart}
+                    seconds={seconds}
+                    setSeconds={setSeconds}
+                    milliseconds={milliseconds}
+                    setMilliseconds={setMilliseconds}
+                  />
+                  <button
+                    onClick={() =>
+                      setBidPrice((prevBidPrice) => prevBidPrice + 5)
+                    }
+                  >
+                    +5
+                  </button>
+                  <button
+                    onClick={() =>
+                      setBidPrice((prevBidPrice) => prevBidPrice + 10)
+                    }
+                  >
+                    +10
+                  </button>
+                  <button
+                    onClick={() =>
+                      setBidPrice((prevBidPrice) => prevBidPrice + 50)
+                    }
+                  >
+                    +50
+                  </button>
+                  <button
+                    onClick={() =>
+                      setBidPrice((prevBidPrice) => prevBidPrice + 100)
+                    }
+                  >
+                    +100
+                  </button>
+                </div>
+                <div className={styles.bid_container}>
+                  <div className={styles.remain_point_box}>
+                    잔여 포인트 {myTeamInfo?.remain_point}
+                  </div>
+                  <input
+                    type="number"
+                    value={roomName ? (bidPrice === 0 ? "" : bidPrice) : ""}
+                    readOnly={!roomName}
+                    onChange={handleBidPriceChange}
+                    placeholder={
+                      roomName ? "포인트 입력" : "로그인 후 시도해주세요"
+                    }
+                    className={styles.input}
+                  />
+                  <button
+                    onClick={sendMessage}
+                    className={styles.button}
+                    disabled={!isLiveMember}
+                  >
+                    입찰
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div
+                  className={styles.timer_container}
+                  style={{ color: "white" }}
+                >
+                  <button
+                    onClick={() =>
+                      setBidPrice((prevBidPrice) => prevBidPrice + 10)
+                    }
+                  >
+                    <PermIdentityOutlinedIcon />
+                  </button>
+                  {/* <Timer
+                    className={styles.timer}
+                    start={start}
+                    setStart={setStart}
+                    seconds={seconds}
+                    setSeconds={setSeconds}
+                    milliseconds={milliseconds}
+                    setMilliseconds={setMilliseconds}
+                  /> */}
 
-        <div className={styles.bid_container}>
-          <div className={styles.remain_point_box}>
-            잔여 포인트 {myTeamInfo?.remain_point}
-          </div>
-          <input
-            type="number"
-            value={roomName ? (bidPrice === 0 ? "" : bidPrice) : ""}
-            readOnly={!roomName}
-            onChange={handleBidPriceChange}
-            placeholder={roomName ? "포인트 입력" : "로그인 후 시도해주세요"}
-            className={styles.input}
-          />
-          <button
-            onClick={sendMessage}
-            className={styles.button}
-            disabled={!isLiveMember}
-          >
-            입찰
-          </button>
-        </div>
+                  <TimerComponent />
+
+                  <button
+                    onClick={() =>
+                      setBidPrice((prevBidPrice) => prevBidPrice + 50)
+                    }
+                  >
+                    사람
+                  </button>
+                  <div
+                    className={styles.undoBtn}
+                    onClick={() => {
+                      setSeconds(15);
+                      setMilliseconds(0);
+                      setStart(false);
+                    }}
+                  >
+                    <UndoOutlinedIcon />
+                  </div>
+                </div>
+              </>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
