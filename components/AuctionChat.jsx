@@ -244,11 +244,11 @@ const AuctionChat = ({
                   </button>
                   <div
                     className={styles.undoBtn}
-                    onClick={() => {
-                      setSeconds(15);
-                      setMilliseconds(0);
-                      setStart(false);
-                    }}
+                    // onClick={() => {
+                    //   setSeconds(15);
+                    //   setMilliseconds(0);
+                    //   setStart(false);
+                    // }}
                   >
                     <UndoOutlinedIcon />
                   </div>

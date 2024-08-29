@@ -122,6 +122,17 @@ export default function Index() {
       return memberList[randomIndex];
     }
 
+    // isLive가 true인 멤버가 있을 경우 업데이트
+    if (!!isLiveMember) {
+      await supabase
+        .from("minions_member")
+        .update({
+          isLive: false,
+        })
+        .eq("id", isLiveMember.id);
+    }
+
+    // 랜덤 멤버를 선택하고 isLive를 true로 업데이트
     const randomMember = getRandomMember(memberList);
 
     await supabase
@@ -151,22 +162,34 @@ export default function Index() {
 
   useEffect(() => {
     // 채널 구독
-    const table_update_channel = supabase
-      .channel("table-update-channel")
+    const member_update_channel = supabase
+      .channel("member_update_channel")
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "*" },
+        { event: "UPDATE", schema: "public", table: "minions_member" },
         async (payload) => {
-          console.log("DB change received!", payload);
-          await fetchTeamList(); // 팀 리스트 재조회
+          console.log("member change received!", payload);
           await fetchMemberList(); // 멤버 리스트 재조회
+        }
+      )
+      .subscribe();
+
+    const team_update_channel = supabase
+      .channel("team-update-channel")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "minions_team" },
+        async (payload) => {
+          console.log("team change received!", payload);
+          await fetchTeamList(); // 팀 리스트 재조회
         }
       )
       .subscribe();
 
     // unsubscribe 함수를 반환합니다.
     return () => {
-      table_update_channel.unsubscribe();
+      member_update_channel.unsubscribe();
+      team_update_channel.unsubscribe();
     };
   }, []);
 

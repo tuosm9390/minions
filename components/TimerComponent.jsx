@@ -10,20 +10,21 @@ const TimerComponent = () => {
   // console.log('timer', timer)
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [isRunning, setIsRunning] = useState(false);
+  const [initialSeconds, setInitialSeconds] = useState(15);
 
   const getElapsedTime = useCallback(() => {
     if (timer?.start_time) {
       const startTime = new Date(timer?.start_time).getTime();
       const elapsed = currentTime - startTime;
-      const result = 15 - Math.floor((elapsed / 1000) % 60);
+      const result = 16 - Math.floor((elapsed / 1000) % 60);
 
       if (result <= 0) {
-        return 15; // 0 이하일 경우 0 반환
+        return 16; // 0 이하일 경우 0 반환
       }
 
-      return result;
+      return Math.max(result, 0); // 0 이하일 경우 0 반환
     }
-    return 0;
+    return 15;
   }, [currentTime, timer?.start_time]);
 
   const handleTimerEnd = async () => {
@@ -58,7 +59,7 @@ const TimerComponent = () => {
     return `${String(seconds).padStart(2, "0")}`;
   };
 
-  const elapsedTime = getElapsedTime();
+  const elapsedTime = getElapsedTime() - 1;
 
   useEffect(() => {
     const fetchTimer = async () => {
@@ -89,12 +90,13 @@ const TimerComponent = () => {
         setCurrentTime(Date.now());
         // getElapsedTime() 15 ~ 1로 표시되기때문에 -1값을 주어서 0이 되었을 경우 타이머 정지
         // getElapsedTime() <= 1 로 할경우 0초에서 바로 초기화
+        // console.log("getElapsedTime()", getElapsedTime());
         if (getElapsedTime() - 1 <= 0) {
           clearInterval(interval);
           handleTimerEnd(); // 타이머 종료 처리
         }
       }
-    }, 1000);
+    }, 300);
 
     // Supabase 채널 구독
     const timerUpdateChannel = supabase
@@ -127,7 +129,9 @@ const TimerComponent = () => {
         {isRunning ? <PauseOutlinedIcon /> : <PlayArrowOutlinedIcon />}
       </div>
       <div className={`${styles.timerBox}`}>
-        <span>COUNT {formatTime(elapsedTime)}</span>
+        <span>
+          COUNT {isRunning ? formatTime(elapsedTime) : initialSeconds}
+        </span>
       </div>
     </>
   );
