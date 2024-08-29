@@ -221,6 +221,7 @@ const AuctionChat = ({
                   >
                     <PermIdentityOutlinedIcon />
                   </button>
+                  {/* 기존 타이머 */}
                   {/* <Timer
                     className={styles.timer}
                     start={start}
@@ -231,6 +232,7 @@ const AuctionChat = ({
                     setMilliseconds={setMilliseconds}
                   /> */}
 
+                  {/* 수정한 타이머 (supabase realtime 사용) */}
                   <TimerComponent className={styles.timer} />
 
                   <button

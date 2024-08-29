@@ -40,7 +40,6 @@ const TimerComponent = () => {
         .from("timers")
         .update({ is_running: false })
         .eq("id", timer?.id);
-      setIsRunning(false); // 상태 변경
     } else {
       const startTime = new Date();
       await supabase
@@ -51,8 +50,8 @@ const TimerComponent = () => {
           is_running: true,
         })
         .eq("id", timer?.id);
-      setIsRunning(true); // 상태 변경
     }
+    setIsRunning(!isRunning); // 상태 변경
   };
 
   const formatTime = (seconds) => {
@@ -63,20 +62,23 @@ const TimerComponent = () => {
 
   useEffect(() => {
     const fetchTimer = async () => {
-      const { data, error } = await supabase.from("timers").select("*");
+      const { data, error } = await supabase
+        .from("timers")
+        .select("*")
+        .maybeSingle();
 
       if (error) {
         console.error("데이터를 가져오는 중 오류 발생:", error);
         return;
       }
 
-      if (data && data.length > 0) {
-        setTimer(data[0]);
-        setIsRunning(data[0]?.is_running);
+      if (data) {
+        setTimer(data);
+        setIsRunning(data?.is_running);
       } else {
         console.warn("타이머 데이터가 없습니다.");
-        setTimer(null); // 필요에 따라 상태를 초기화
-        setIsRunning(false); // 기본값 설정
+        setTimer(null);
+        setIsRunning(false);
       }
     };
 
@@ -85,18 +87,37 @@ const TimerComponent = () => {
     const interval = setInterval(() => {
       if (isRunning) {
         setCurrentTime(Date.now());
-
-        if (getElapsedTime() <= 0) {
+        // getElapsedTime() 15 ~ 1로 표시되기때문에 -1값을 주어서 0이 되었을 경우 타이머 정지
+        // getElapsedTime() <= 1 로 할경우 0초에서 바로 초기화
+        if (getElapsedTime() - 1 <= 0) {
           clearInterval(interval);
           handleTimerEnd(); // 타이머 종료 처리
-          return;
         }
       }
-    }, 10); // 10ms 간격으로 업데이트
+    }, 1000);
 
-    // 컴포넌트 언마운트 시 구독 해제
+    // Supabase 채널 구독
+    const timerUpdateChannel = supabase
+      .channel("timer-update-channel")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "timers" },
+        async (payload) => {
+          console.log("타이머 업데이트!", payload);
+          const updatedTimer = await supabase
+            .from("timers")
+            .select("*")
+            .eq("id", payload.new.id)
+            .maybeSingle();
+          setTimer(updatedTimer.data);
+          setIsRunning(updatedTimer.data.is_running);
+        }
+      )
+      .subscribe();
+
     return () => {
       clearInterval(interval);
+      timerUpdateChannel.unsubscribe();
     };
   }, [getElapsedTime, isRunning]);
 
