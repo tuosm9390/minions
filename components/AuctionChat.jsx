@@ -14,6 +14,8 @@ const AuctionChat = ({
   setStart,
   myTeamInfo,
   isLiveMember,
+  setLiveMember,
+  successfulBid,
 }) => {
   // 상태 변수
   const [chatHistory, setChatHistory] = useState([]);
@@ -214,11 +216,7 @@ const AuctionChat = ({
                   className={styles.timer_container}
                   style={{ color: "white" }}
                 >
-                  <button
-                    onClick={() =>
-                      setBidPrice((prevBidPrice) => prevBidPrice + 10)
-                    }
-                  >
+                  <button onClick={() => setLiveMember()}>
                     <PermIdentityOutlinedIcon />
                   </button>
                   {/* 기존 타이머 */}
@@ -235,12 +233,8 @@ const AuctionChat = ({
                   {/* 수정한 타이머 (supabase realtime 사용) */}
                   <TimerComponent className={styles.timer} />
 
-                  <button
-                    onClick={() =>
-                      setBidPrice((prevBidPrice) => prevBidPrice + 50)
-                    }
-                  >
-                    사람
+                  <button type="button" onClick={() => successfulBid()}>
+                    낙찰
                   </button>
                   <div
                     className={styles.undoBtn}
