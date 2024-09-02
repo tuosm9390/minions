@@ -126,6 +126,7 @@ a {
 
 a:hover {
   background-color: #e6b800; /* 호버 색상 */
+  color: white;
 }
 
 /* input태그 type=number 화살표 제거 */
@@ -137,4 +138,9 @@ input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none; /* Chrome, Safari, Edge */
   margin: 0; /* 스핀 버튼의 기본 여백 제거 */
+}
+
+section {
+  padding: 50px;
+  background-color: #f0f0f0;
 }

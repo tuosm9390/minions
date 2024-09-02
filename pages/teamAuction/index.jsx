@@ -1,12 +1,14 @@
 import Layout from "@/components/Layout";
-import React, { useState } from "react";
+import { useState } from "react";
 import TeamAuction from "./TeamAuction";
 import { supabase } from "@/supabase.config";
+import styles from "./index.module.css";
 
 function Index() {
   // 채팅방
   const [roomName, setRoomName] = useState("");
   const [inputValue, setInputValue] = useState("");
+  const [userName, setUserName] = useState("");
 
   // room_name을 입력받아 해당 id를 반환하는 함수
   const getRoomIdByName = async () => {
@@ -27,18 +29,32 @@ function Index() {
   };
   return (
     <section>
-      {roomName ? (
-        <TeamAuction roomName={roomName} />
+      {roomName && userName ? (
+        <TeamAuction roomName={roomName} userName={userName} />
       ) : (
-        <div style={{padding: "50px"}}>
+        <div className={styles.enterWrapper}>
+          <input
+            type="text"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            placeholder={"아이디를 입력해주세요."}
+            className={styles.enterInput}
+          />
+
           <input
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder={"입력해주세요"}
+            placeholder={"입장번호를 입력해주세요."}
+            className={styles.enterInput}
           />
-          <button type="button" onClick={() => getRoomIdByName()}>
-            방 입장
+
+          <button
+            type="button"
+            onClick={() => getRoomIdByName()}
+            className={styles.enterBtn}
+          >
+            경매 입장
           </button>
         </div>
       )}

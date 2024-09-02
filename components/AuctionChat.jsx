@@ -1,17 +1,14 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/supabase.config";
 import styles from "./AuctionChat.module.css";
-import Timer from "./Timer";
-import UndoOutlinedIcon from "@mui/icons-material/UndoOutlined";
 import PermIdentityOutlinedIcon from "@mui/icons-material/PermIdentityOutlined";
 import TimerComponent from "./TimerComponent";
 
 const AuctionChat = ({
   roomName,
+  userName,
   bidPrice,
   setBidPrice,
-  start,
-  setStart,
   myTeamInfo,
   isLiveMember,
   setLiveMember,
@@ -20,10 +17,9 @@ const AuctionChat = ({
   // 상태 변수
   const [chatHistory, setChatHistory] = useState([]);
   const chatContainerRef = useRef(null);
-  const [seconds, setSeconds] = useState(15); // 시작 시간을 15초로 설정
-  const [milliseconds, setMilliseconds] = useState(0); // 밀리초 상태
+  const [start, setStart] = useState(false);
 
-  const [observer, setObserver] = useState(true);
+  const [observer, setObserver] = useState(userName == 1 && true);
 
   useEffect(() => {
     // 채널 구독
@@ -60,6 +56,11 @@ const AuctionChat = ({
 
   // 메시지 전송 함수
   const sendMessage = async () => {
+    if (!start) {
+      setBidPrice(0);
+      return window.alert("경매가 진행중이지 않습니다.");
+    }
+
     if (bidPrice > isLiveMember.point) {
       // 메세지 저장
       await supabase.from("messages").insert([
@@ -67,6 +68,7 @@ const AuctionChat = ({
           user_id: myTeamInfo.id,
           content: `${myTeamInfo.leader_member_name} 팀장 - ${isLiveMember.member_name} - ${bidPrice}포인트 입찰`,
           room_id: "4c142acb-a028-48bb-9fe8-4fba92c3fa52",
+          color: myTeamInfo?.team_color,
         },
       ]); // 메시지 삽입
       setBidPrice(0); // 입력 필드 초기화
@@ -76,6 +78,7 @@ const AuctionChat = ({
         .from("minions_member")
         .update({
           point: bidPrice,
+          last_bid_team_id: myTeamInfo.id,
         })
         .eq("id", isLiveMember.id);
     } else {
@@ -126,7 +129,7 @@ const AuctionChat = ({
                     <span
                       className={styles.team_leader_text}
                       style={{
-                        color: myTeamInfo?.team_color,
+                        color: msg.color,
                       }}
                     >
                       {team_leader}
@@ -143,6 +146,7 @@ const AuctionChat = ({
               경매자 - 타이머, 잔여포인트, 입찰포인트, 입찰버튼
             */}
             {!observer ? (
+              // 경매자
               <>
                 <div
                   className={styles.timer_container}
@@ -157,7 +161,15 @@ const AuctionChat = ({
                     milliseconds={milliseconds}
                     setMilliseconds={setMilliseconds}
                   /> */}
-                  <TimerComponent className={styles.timer} />
+                  <TimerComponent
+                    className={styles.timer}
+                    successfulBid={() => successfulBid()}
+                    bidPrice={bidPrice}
+                    observer={observer}
+                    start={start}
+                    setStart={setStart}
+                    isLiveMember={isLiveMember}
+                  />
                   <button
                     onClick={() =>
                       setBidPrice((prevBidPrice) => prevBidPrice + 5)
@@ -211,6 +223,7 @@ const AuctionChat = ({
                 </div>
               </>
             ) : (
+              // 관전자
               <>
                 <div
                   className={styles.timer_container}
@@ -231,21 +244,15 @@ const AuctionChat = ({
                   /> */}
 
                   {/* 수정한 타이머 (supabase realtime 사용) */}
-                  <TimerComponent className={styles.timer} />
-
-                  <button type="button" onClick={() => successfulBid()}>
-                    낙찰
-                  </button>
-                  <div
-                    className={styles.undoBtn}
-                    // onClick={() => {
-                    //   setSeconds(15);
-                    //   setMilliseconds(0);
-                    //   setStart(false);
-                    // }}
-                  >
-                    <UndoOutlinedIcon />
-                  </div>
+                  <TimerComponent
+                    className={styles.timer}
+                    successfulBid={() => successfulBid()}
+                    bidPrice={bidPrice}
+                    observer={observer}
+                    start={start}
+                    setStart={setStart}
+                    isLiveMember={isLiveMember}
+                  />
                 </div>
               </>
             )}

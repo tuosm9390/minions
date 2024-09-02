@@ -10,7 +10,7 @@ import { supabase } from "@/supabase.config";
 import { useState, useEffect } from "react";
 import AuctionChat from "@/components/AuctionChat";
 
-export default function TeamAuction({ roomName }) {
+export default function TeamAuction({ roomName, userName }) {
   // 팀 리스트
   const [teamList, setTeamList] = useState();
   // 멤버 리스트
@@ -79,25 +79,26 @@ export default function TeamAuction({ roomName }) {
 
   // 낙찰
   const successfulBid = async () => {
-    const responseMember = await supabase
-      .from("minions_member")
-      .update({
-        team_id: bidTeam.id,
-        team_name: bidTeam.team_name,
-        point: bidPrice,
-        isLive: false,
-      })
-      .eq("id", isLiveMember.id)
-      .select();
+    console.log("bidPrice", bidPrice);
+    // const responseMember = await supabase
+    //   .from("minions_member")
+    //   .update({
+    //     team_id: bidTeam.id,
+    //     team_name: bidTeam.team_name,
+    //     point: bidPrice,
+    //     isLive: false,
+    //   })
+    //   .eq("id", isLiveMember.id)
+    //   .select();
 
-    const responseTeam = await supabase
-      .from("minions_team")
-      .update({
-        [isLiveMember.position]: isLiveMember.id,
-        remain_point: bidTeam.initial_point - bidPrice,
-      })
-      .eq("id", bidTeam.id)
-      .select();
+    // const responseTeam = await supabase
+    //   .from("minions_team")
+    //   .update({
+    //     [isLiveMember.position]: isLiveMember.id,
+    //     remain_point: bidTeam.initial_point - bidPrice,
+    //   })
+    //   .eq("id", bidTeam.id)
+    //   .select();
   };
 
   // 최고 입찰액이 0일 경우 유찰 분류
@@ -196,21 +197,23 @@ export default function TeamAuction({ roomName }) {
 
   useEffect(() => {
     // 본인이 팀장인 팀의 정보 필터
-    const selectMyTeam = (members) => {
-      // login한 유저의 정보로 유저 id 추출
-      const id = members
-        ?.filter((member) => member.user_name === "team1")
-        .slice()[0].id;
+    if (userName != 1) {
+      const selectMyTeam = (members) => {
+        // login한 유저의 정보로 유저 id 추출
+        const id = members
+          ?.filter((member) => member.user_name === userName)
+          .slice()[0].id;
 
-      const teamInfo = teamList
-        ?.filter((team) => team.leader_id === id)
-        .slice();
+        const teamInfo = teamList
+          ?.filter((team) => team.leader_id === id)
+          .slice();
 
-      setMyTeamInfo(teamInfo);
-    };
+        setMyTeamInfo(teamInfo);
+      };
 
-    selectMyTeam(memberList);
-  }, [memberList, teamList]);
+      selectMyTeam(memberList);
+    }
+  }, [memberList, teamList, userName]);
 
   return (
     <div className={styles.container}>
@@ -292,10 +295,9 @@ export default function TeamAuction({ roomName }) {
             <div className={styles.chat_box_container}>
               <AuctionChat
                 roomName={roomName}
+                userName={userName}
                 bidPrice={bidPrice}
                 setBidPrice={setBidPrice}
-                start={start}
-                setStart={setStart}
                 myTeamInfo={myTeamInfo && myTeamInfo[0]}
                 isLiveMember={isLiveMember}
                 setLiveMember={() => setLiveMember()}

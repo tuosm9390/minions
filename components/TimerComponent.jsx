@@ -1,13 +1,21 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/supabase.config";
 import PlayArrowOutlinedIcon from "@mui/icons-material/PlayArrowOutlined";
 import PauseOutlinedIcon from "@mui/icons-material/PauseOutlined";
 import styles from "./TimerComponent.module.css";
+import UndoOutlinedIcon from "@mui/icons-material/UndoOutlined";
+import { RunningWithErrors } from "@mui/icons-material";
 
-const TimerComponent = () => {
+const TimerComponent = ({
+  successfulBid,
+  bidPrice,
+  observer,
+  start,
+  setStart,
+  isLiveMember,
+}) => {
   const [timer, setTimer] = useState(null);
 
-  // console.log('timer', timer)
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [isRunning, setIsRunning] = useState(false);
   const [initialSeconds, setInitialSeconds] = useState(15);
@@ -32,15 +40,22 @@ const TimerComponent = () => {
       .from("timers")
       .update({ is_running: false })
       .eq("id", timer?.id);
+
     setIsRunning(false); // 상태 변경
   };
 
   const toggleTimer = async () => {
+    // 경매 취소했을 경우
     if (isRunning) {
       await supabase
         .from("timers")
         .update({ is_running: false })
         .eq("id", timer?.id);
+
+      await supabase
+        .from("minions_member")
+        .update({ point: 0, last_bid_team_id: null })
+        .eq("id", isLiveMember.id);
     } else {
       const startTime = new Date();
       await supabase
@@ -105,7 +120,7 @@ const TimerComponent = () => {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "timers" },
         async (payload) => {
-          console.log("타이머 업데이트!", payload);
+          // console.log("타이머 업데이트!", payload);
           const updatedTimer = await supabase
             .from("timers")
             .select("*")
@@ -123,9 +138,16 @@ const TimerComponent = () => {
     };
   }, [getElapsedTime, isRunning]);
 
-  return (
+  useMemo(() => {
+    setStart(isRunning);
+  }, [isRunning, setStart]);
+
+  return observer ? (
     <>
-      <div className={styles.startBtn} onClick={toggleTimer}>
+      <div
+        className={styles.startBtn}
+        onClick={() => !isRunning && toggleTimer()}
+      >
         {isRunning ? <PauseOutlinedIcon /> : <PlayArrowOutlinedIcon />}
       </div>
       <div className={`${styles.timerBox}`}>
@@ -133,7 +155,26 @@ const TimerComponent = () => {
           COUNT {isRunning ? formatTime(elapsedTime) : initialSeconds}
         </span>
       </div>
+      <button
+        type="button"
+        onClick={() => {
+          isRunning && successfulBid();
+        }}
+      >
+        낙찰
+      </button>
+      <button
+        type="button"
+        className={styles.undoBtn}
+        onClick={() => isRunning && toggleTimer()}
+      >
+        <UndoOutlinedIcon />
+      </button>
     </>
+  ) : (
+    <div className={`${styles.timerBox}`}>
+      <span>COUNT {isRunning ? formatTime(elapsedTime) : initialSeconds}</span>
+    </div>
   );
 };
 

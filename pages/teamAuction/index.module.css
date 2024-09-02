@@ -1,0 +1,30 @@
+.enterBtn {
+  padding: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  background-color: #ffcc00;
+  border: none;
+  border-radius: 5px;
+  color: black;
+}
+
+.enterBtn:hover {
+  color: white;
+  background-color: #e6b800;
+}
+
+.enterInput {
+  height: 50px;
+  padding: 10px;
+  font-size: 18px;
+  margin-right: 10px;
+}
+
+.enterWrapper {
+  padding: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  height: 50vh;
+}

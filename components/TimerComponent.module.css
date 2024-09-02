@@ -16,7 +16,8 @@
   scale: 1;
 }
 
-.startBtn {
+.startBtn,
+.undoBtn {
   display: flex;
   align-items: center;
   background-color: #ffffff;
@@ -27,7 +28,8 @@
   padding: 0 10px;
 }
 
-.startBtn:hover {
+.startBtn:hover,
+.undoBtn:hover {
   background-color: rgb(176, 174, 174);
   color: white;
 }
