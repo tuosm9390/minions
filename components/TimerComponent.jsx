@@ -4,7 +4,6 @@ import PlayArrowOutlinedIcon from "@mui/icons-material/PlayArrowOutlined";
 import PauseOutlinedIcon from "@mui/icons-material/PauseOutlined";
 import styles from "./TimerComponent.module.css";
 import UndoOutlinedIcon from "@mui/icons-material/UndoOutlined";
-import { RunningWithErrors } from "@mui/icons-material";
 
 const TimerComponent = ({
   successfulBid,
@@ -13,6 +12,7 @@ const TimerComponent = ({
   start,
   setStart,
   isLiveMember,
+  roomName,
 }) => {
   const [timer, setTimer] = useState(null);
 
@@ -35,11 +35,32 @@ const TimerComponent = ({
     return 15;
   }, [currentTime, timer?.start_time]);
 
+  // 경매시간 마감
   const handleTimerEnd = async () => {
     await supabase
       .from("timers")
-      .update({ is_running: false })
+      .update({
+        is_running: false,
+      })
       .eq("id", timer?.id);
+
+    // 경매 정보 저장
+    await supabase
+      .from("minions_member")
+      .update({
+        // 유찰여부
+        dismissed: isLiveMember.point == 0 ? true : false,
+        isLive: false,
+      })
+      .eq("id", isLiveMember.id);
+
+    await supabase.from("messages").insert([
+      {
+        content: "경매가 종료되었습니다!",
+        room_id: roomName,
+        color: "",
+      },
+    ]); // 메시지 삽입
 
     setIsRunning(false); // 상태 변경
   };
@@ -52,10 +73,20 @@ const TimerComponent = ({
         .update({ is_running: false })
         .eq("id", timer?.id);
 
+      // 멤버 정보 변경
       await supabase
         .from("minions_member")
         .update({ point: 0, last_bid_team_id: null })
         .eq("id", isLiveMember.id);
+
+      // 경매종료 메세지
+      await supabase.from("messages").insert([
+        {
+          content: "경매가 종료되었습니다!",
+          room_id: roomName,
+          color: "white",
+        },
+      ]); // 메시지 삽입
     } else {
       const startTime = new Date();
       await supabase
@@ -66,6 +97,14 @@ const TimerComponent = ({
           is_running: true,
         })
         .eq("id", timer?.id);
+
+      await supabase.from("messages").insert([
+        {
+          content: "경매가 시작되었습니다!",
+          room_id: roomName,
+          color: "white",
+        },
+      ]); // 메시지 삽입
     }
     setIsRunning(!isRunning); // 상태 변경
   };
@@ -114,7 +153,7 @@ const TimerComponent = ({
     }, 300);
 
     // Supabase 채널 구독
-    const timerUpdateChannel = supabase
+    const timer_update_channel = supabase
       .channel("timer-update-channel")
       .on(
         "postgres_changes",
@@ -134,7 +173,7 @@ const TimerComponent = ({
 
     return () => {
       clearInterval(interval);
-      timerUpdateChannel.unsubscribe();
+      timer_update_channel.unsubscribe();
     };
   }, [getElapsedTime, isRunning]);
 

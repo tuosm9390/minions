@@ -21,44 +21,23 @@ const AuctionChat = ({
 
   const [observer, setObserver] = useState(userName == 1 && true);
 
-  useEffect(() => {
-    // 채널 구독
-    const chat_update_channel = supabase
-      .channel("chat-update-channel")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        (payload) => {
-          setChatHistory((prev) => [...prev, payload.new]);
-        }
-      )
-      .subscribe();
-
-    // 초기 채팅 내역 가져오기
-    const fetchMessages = async () => {
-      const { data } = await supabase
-        .from("messages")
-        .select("*")
-        .eq("room_id", roomName)
-        .order("created_at", { ascending: true });
-      setChatHistory(data);
-    };
-
-    fetchMessages();
-
-    console.log(roomName);
-
-    // 컴포넌트 언마운트 시 구독 해제
-    return () => {
-      chat_update_channel.unsubscribe();
-    };
-  }, [roomName]);
-
   // 메시지 전송 함수
   const sendMessage = async () => {
     if (!start) {
       setBidPrice(0);
       return window.alert("경매가 진행중이지 않습니다.");
+    }
+
+    // last_bid_team_id와 myTeamInfo.id가 동일한 경우 함수 종료
+    const { data: lastBidData } = await supabase
+      .from("minions_member")
+      .select("last_bid_team_id")
+      .eq("id", isLiveMember.id)
+      .single();
+
+    console.log("myTeamInfo", myTeamInfo);
+    if (lastBidData && lastBidData.last_bid_team_id === myTeamInfo.id) {
+      return window.alert("현재 팀은 입찰할 수 없습니다.");
     }
 
     if (bidPrice > isLiveMember.point) {
@@ -67,7 +46,7 @@ const AuctionChat = ({
         {
           user_id: myTeamInfo.id,
           content: `${myTeamInfo.leader_member_name} 팀장 - ${isLiveMember.member_name} - ${bidPrice}포인트 입찰`,
-          room_id: "4c142acb-a028-48bb-9fe8-4fba92c3fa52",
+          room_id: roomName,
           color: myTeamInfo?.team_color,
         },
       ]); // 메시지 삽입
@@ -81,6 +60,15 @@ const AuctionChat = ({
           last_bid_team_id: myTeamInfo.id,
         })
         .eq("id", isLiveMember.id);
+
+      const startTime = new Date();
+      await supabase
+        .from("timers")
+        .update({
+          start_time: startTime,
+          duration: 60000,
+        })
+        .eq("id", 3);
     } else {
       window.alert("현재 입찰 금액보다 커야합니다.");
     }
@@ -112,6 +100,89 @@ const AuctionChat = ({
     }
   }, [chatHistory]); // chatHistory가 업데이트될 때마다 스크롤
 
+  useEffect(() => {
+    // 초기 상태 설정
+    setChatHistory([
+      {
+        content: "서버에 접속중입니다...",
+        id: "connecting",
+        color: "white",
+      },
+    ]);
+
+    // message채널 구독
+    const message_update_channel = supabase
+      .channel("message-update-channel")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          setChatHistory((prev) => [...prev, payload.new]);
+        }
+      )
+      .subscribe();
+
+    // timer 채널 구독
+    const timer_update_channel = supabase
+      .channel("timer-update-channel")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "timers" },
+        async (payload) => {
+          console.log("타이머 업데이트!", payload);
+        }
+      )
+      .subscribe();
+
+    // 초기 채팅 내역 가져오기
+    const fetchMessages = async () => {
+      const { data } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("room_id", roomName)
+        .order("created_at", { ascending: true });
+
+      // 가져온 메시지와 "서버에 접속중입니다..." 메시지를 결합
+      setChatHistory((prev) => [
+        ...(data ? [...data] : []),
+        {
+          content: "서버에 접속중입니다...",
+          id: "connecting",
+          color: "white",
+        },
+      ]);
+
+      // 2초 후에 "서버에 접속되었습니다" 메시지 추가
+      setTimeout(() => {
+        setChatHistory((prev) => {
+          // 이미 "서버에 접속되었습니다" 메시지가 있는지 확인
+          const hasConnectedMessage = prev.some(
+            (msg) => msg.content === "서버에 접속되었습니다"
+          );
+          if (!hasConnectedMessage) {
+            return [
+              ...prev,
+              {
+                content: "서버에 접속되었습니다",
+                id: "server-connection",
+                color: "white",
+              },
+            ];
+          }
+          return prev; // 이미 메시지가 있다면 그대로 반환
+        });
+      }, 2000);
+    };
+
+    fetchMessages();
+
+    // 컴포넌트 언마운트 시 구독 해제
+    return () => {
+      message_update_channel.unsubscribe();
+      timer_update_channel.unsubscribe();
+    };
+  }, [roomName]);
+
   return (
     <div className={styles.container}>
       <div className={styles.chatContainer}>
@@ -119,7 +190,7 @@ const AuctionChat = ({
           <>
             <div className={styles.chat_box} ref={chatContainerRef}>
               {chatHistory?.map((msg) => {
-                const parts = msg.content.split(" - "); // "-"로 분리
+                const parts = msg.content?.split(" - "); // "-"로 분리
                 const team_leader = parts[0];
                 const auction_member = parts[1];
                 const points = parts[2];
@@ -133,15 +204,19 @@ const AuctionChat = ({
                       }}
                     >
                       {team_leader}
-                    </span>{" "}
-                    - {auction_member}
-                    {" - "}
-                    <span className={styles.point}>{points}</span>
+                    </span>
+                    {parts.length > 1 && (
+                      <>
+                        {" - "}
+                        {auction_member} {" - "}
+                        <span className={styles.point}>{points}</span>
+                      </>
+                    )}
                   </div>
                 );
               })}
             </div>
-            {/*             
+            {/*
               관전자 - 다음 사람 설정, 경매 시작, 타이머일시정지, 경매 취소, 타이머
               경매자 - 타이머, 잔여포인트, 입찰포인트, 입찰버튼
             */}
@@ -169,6 +244,7 @@ const AuctionChat = ({
                     start={start}
                     setStart={setStart}
                     isLiveMember={isLiveMember}
+                    roomName={roomName}
                   />
                   <button
                     onClick={() =>
@@ -252,6 +328,7 @@ const AuctionChat = ({
                     start={start}
                     setStart={setStart}
                     isLiveMember={isLiveMember}
+                    roomName={roomName}
                   />
                 </div>
               </>

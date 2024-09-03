@@ -80,6 +80,7 @@ export default function TeamAuction({ roomName, userName }) {
   // 낙찰
   const successfulBid = async () => {
     console.log("bidPrice", bidPrice);
+
     // const responseMember = await supabase
     //   .from("minions_member")
     //   .update({
@@ -99,18 +100,6 @@ export default function TeamAuction({ roomName, userName }) {
     //   })
     //   .eq("id", bidTeam.id)
     //   .select();
-  };
-
-  // 최고 입찰액이 0일 경우 유찰 분류
-  const miscarry = async () => {
-    const responseMember = await supabase
-      .from("minions_member")
-      .update({
-        point: 0,
-        isLive: false,
-      })
-      .eq("id", isLiveMember.id)
-      .select();
   };
 
   // 경매 대기로 변경
@@ -200,12 +189,12 @@ export default function TeamAuction({ roomName, userName }) {
     if (userName != 1) {
       const selectMyTeam = (members) => {
         // login한 유저의 정보로 유저 id 추출
-        const id = members
-          ?.filter((member) => member.user_name === userName)
-          .slice()[0].id;
+        const member = members?.find(
+          (member) => member?.user_name === userName
+        );
 
         const teamInfo = teamList
-          ?.filter((team) => team.leader_id === id)
+          ?.filter((team) => team.leader_id === member?.id)
           .slice();
 
         setMyTeamInfo(teamInfo);
