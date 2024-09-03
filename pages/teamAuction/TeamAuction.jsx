@@ -5,11 +5,10 @@ import midLane from "../../public/midLane.webp";
 import supLane from "../../public/supLane.webp";
 import topLane from "../../public/topLane.webp";
 import auction_main from "../../public/auction_main.webp";
-import styles from "./TeamAuction.module.css";
+import styles from "./teamAuction.module.css";
 import { supabase } from "@/supabase.config";
 import { useState, useEffect } from "react";
 import AuctionChat from "@/components/AuctionChat";
-
 
 export default function TeamAuction({ roomName, userName }) {
   // 팀 리스트
