@@ -10,6 +10,7 @@ import { supabase } from "@/supabase.config";
 import { useState, useEffect } from "react";
 import AuctionChat from "@/components/AuctionChat";
 
+
 export default function TeamAuction({ roomName, userName }) {
   // 팀 리스트
   const [teamList, setTeamList] = useState();
